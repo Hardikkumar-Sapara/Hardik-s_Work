@@ -1,0 +1,21 @@
+{
+	"name": "adf-batch17-practice",
+	"properties": {
+		"globalParameters": {
+			"Container": {
+				"type": "string",
+				"value": "gen2container"
+			},
+			"TargetPath": {
+				"type": "string",
+				"value": "target/new_folder"
+			}
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "d137faeb-ffd9-4c2c-b0c3-4161db8045b9",
+		"tenantId": "1758bfad-daf0-4049-94b0-510450ff81f7"
+	}
+}
