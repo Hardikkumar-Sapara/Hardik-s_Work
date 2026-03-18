@@ -1,0 +1,32 @@
+{
+	"name": "ds_copy_latestFile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls_batch17_lab",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FireName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().FireName",
+					"type": "Expression"
+				},
+				"folderPath": "source",
+				"fileSystem": "gen2container"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
