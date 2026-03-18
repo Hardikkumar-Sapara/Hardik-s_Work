@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-batch17-practice"
+		},
+		"ls_adls_batch17_lab_accountKey": {
+			"value": ""
+		},
+		"ls_source_sql_password": {
+			"value": ""
+		},
+		"ls_adls_batch17_lab_properties_typeProperties_url": {
+			"value": "https://adlsbronzebatch17test.dfs.core.windows.net/"
+		},
+		"ls_source_sql_properties_typeProperties_server": {
+			"value": "adfbatch17dev.database.windows.net"
+		},
+		"ls_source_sql_properties_typeProperties_database": {
+			"value": "batch17dev"
+		},
+		"ls_source_sql_properties_typeProperties_userName": {
+			"value": "saparatejal9"
+		}
+	}
+}
