@@ -1207,7 +1207,7 @@
 								"referenceName": "ds_copy_latestFile",
 								"type": "DatasetReference",
 								"parameters": {
-									"FireName": {
+									"FileName": {
 										"value": "@variables('LatestFileName')",
 										"type": "Expression"
 									}
