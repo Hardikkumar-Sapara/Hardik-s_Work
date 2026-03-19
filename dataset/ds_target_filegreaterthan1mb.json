@@ -1,0 +1,23 @@
+{
+	"name": "ds_target_filegreaterthan1mb",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls_batch17_lab",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "target/greatersize",
+				"fileSystem": "gen2container"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
