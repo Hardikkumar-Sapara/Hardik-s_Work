@@ -6,7 +6,7 @@
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"FireName": {
+			"FileName": {
 				"type": "string"
 			}
 		},
