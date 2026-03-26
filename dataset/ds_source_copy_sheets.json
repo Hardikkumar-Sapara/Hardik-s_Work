@@ -1,0 +1,32 @@
+{
+	"name": "ds_source_copy_sheets",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls_batch17_lab",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Sheetname": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().Sheetname",
+					"type": "Expression"
+				},
+				"folderPath": "source",
+				"fileSystem": "gen2container"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
