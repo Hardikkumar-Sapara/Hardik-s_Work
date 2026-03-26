@@ -523,6 +523,67 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_Scripts_activity')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Script",
+						"type": "Script",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "ls_source_sql",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": "PRINT 'start of the statement'\nselect * from salesitems\nPRINT 'End of the statement'"
+								},
+								{
+									"parameters": [
+										{
+											"name": "Name",
+											"type": "String",
+											"value": "Dube",
+											"direction": "Input"
+										}
+									],
+									"type": "Query",
+									"text": "select * from dbo.IPLTeams where Player_Name = @Name"
+								},
+								{
+									"type": "NonQuery",
+									"text": "create table scripttable2(\n    tablename varchar(20),\n    table_status varchar(10)\n)"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Dev"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_source_sql')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_StoredProc')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
