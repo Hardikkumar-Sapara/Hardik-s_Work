@@ -1,5 +1,13 @@
 {
 	"name": "adf-batch17-practice-test",
+	"properties": {
+		"globalParameters": {
+			"Container": {
+				"type": "string",
+				"value": "gen2container"
+			}
+		}
+	},
 	"location": "eastus",
 	"identity": {
 		"type": "SystemAssigned",
