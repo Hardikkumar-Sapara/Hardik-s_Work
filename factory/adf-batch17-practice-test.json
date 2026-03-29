@@ -1,0 +1,9 @@
+{
+	"name": "adf-batch17-practice-test",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "0812fd3a-a9ae-49c5-9493-af92fec43bc6",
+		"tenantId": "243e43a1-e6f1-4201-abb3-73a7f860989a"
+	}
+}
