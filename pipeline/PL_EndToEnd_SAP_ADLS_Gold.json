@@ -1,0 +1,316 @@
+{
+	"name": "PL_EndToEnd_SAP_ADLS_Gold",
+	"properties": {
+		"description": "Single pipeline for SAP to ADLS Bronze, Silver, Gold with largest file logic and SQL load",
+		"activities": [
+			{
+				"name": "Get_File_List",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"fieldList": []
+				}
+			},
+			{
+				"name": "Filter_Last_12_Days",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Get_File_List",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get_File_List').output.childItems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@greaterOrEquals(item().lastModified, addDays(utcNow(), -12))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ForEach_Files",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Filter_Last_12_Days",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Filter_Last_12_Days').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Get_File_Metadata",
+							"type": "GetMetadata",
+							"dependsOn": [],
+							"policy": {
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"fieldList": [
+									"size"
+								]
+							}
+						},
+						{
+							"name": "Set_File_Size",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Get_File_Metadata",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_file_size",
+								"value": {
+									"value": "@activity('Get_File_Metadata').output.size",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Copy_To_Bronze",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Set_File_Size",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource"
+								},
+								"sink": {
+									"type": "DelimitedTextSink"
+								},
+								"enableStaging": false
+							}
+						},
+						{
+							"name": "Copy_To_Silver",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Copy_To_Bronze",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource"
+								},
+								"sink": {
+									"type": "DelimitedTextSink"
+								},
+								"enableStaging": false
+							}
+						},
+						{
+							"name": "If_Largest_File",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "Copy_To_Silver",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@greater(variables('v_file_size'), variables('v_max_size'))",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Set_Max_Size",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "v_max_size",
+											"value": {
+												"value": "@variables('v_file_size')",
+												"type": "Expression"
+											}
+										}
+									},
+									{
+										"name": "Set_Max_File",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "v_max_file",
+											"value": {
+												"value": "@item().name",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Copy_Largest_To_Gold",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "ForEach_Files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource"
+					},
+					"sink": {
+						"type": "DelimitedTextSink"
+					},
+					"enableStaging": false
+				}
+			},
+			{
+				"name": "Lookup_SQL_Latest",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Copy_Largest_To_Gold",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlSource",
+						"sqlReaderQuery": "SELECT * FROM TargetTable WHERE UpdatedDate >= DATEADD(DAY, -1, GETDATE())",
+						"partitionOption": "None"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Copy_SQL_To_Gold",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Lookup_SQL_Latest",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlSource",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink"
+					},
+					"enableStaging": false
+				}
+			}
+		],
+		"variables": {
+			"v_max_size": {
+				"type": "Int",
+				"defaultValue": "0"
+			},
+			"v_max_file": {
+				"type": "String"
+			},
+			"v_file_size": {
+				"type": "Int"
+			}
+		},
+		"annotations": []
+	}
+}
