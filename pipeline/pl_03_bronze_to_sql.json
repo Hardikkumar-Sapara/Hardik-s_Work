@@ -78,7 +78,7 @@
 								"sink": {
 									"type": "AzureSqlSink",
 									"preCopyScript": {
-										"value": "IF OBJECT_ID('@{concat('bronze.', replace(item().name, '.csv', ''))}', 'U') IS NOT NULL\nDROP TABLE @{concat('bronze.', replace(item().name, '.csv', ''))};",
+										"value": "@concat(\n'IF OBJECT_ID(''bronze.', replace(item().name, '.csv', ''), ''',''U'') IS NOT NULL ',\n'BEGIN ',\n'DROP TABLE bronze.', replace(item().name, '.csv', ''), ' ',\n'END'\n)",
 										"type": "Expression"
 									},
 									"writeBehavior": "insert",
@@ -144,7 +144,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat(\n    'SELECT * FROM [dbo].[', \n    replace(item().name, '.csv', ''), \n    '] WHERE last_updated >= DATEADD(day, -12, GETDATE())'\n)",
+										"value": "@concat(\n    'SELECT * FROM [bronze.', \n    replace(item().name, '.csv', ''), \n    '] WHERE TRY_CONVERT(datetime, REPLACE(last_updated, ''.'', '':''), 105) >= DATEADD(day, -12, GETDATE())'\n)",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
