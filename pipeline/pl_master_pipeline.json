@@ -1,0 +1,96 @@
+{
+	"name": "pl_master_pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "bronze_to_silver_csv",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_01_bronze_to_silver",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "silver_to_gold_with_maxFilesize",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "bronze_to_silver_csv",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_02_silver_to_gold_with_MaxFileSize",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "bronze_to_sql_silver",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "silver_to_gold_with_maxFilesize",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_03_bronze_to_sql",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "silversql_to_goldadls_csv",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "bronze_to_sql_silver",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_04_SilverSQL_To_GoldADLS",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Project"
+		},
+		"annotations": []
+	}
+}
