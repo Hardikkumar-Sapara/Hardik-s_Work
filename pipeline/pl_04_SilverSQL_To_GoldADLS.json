@@ -1,0 +1,88 @@
+{
+	"name": "pl_04_SilverSQL_To_GoldADLS",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@createArray('COSTLIST','INVOICE_LINE_ITEM','PRODUCING_STAT_RATIO_DETAIL')",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy sql silver data to gold ADLS",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "@concat(\n'SELECT * FROM [silver.', item(), '] \nWHERE TRY_CONVERT(datetime, REPLACE(last_updated, ''.'', '':''),105) = \n(\nSELECT MAX(TRY_CONVERT(datetime, REPLACE(last_updated, ''.'', '':''),105)) \nFROM [silver.', item(), ']\n)'\n)",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".csv"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_copy_source_silver_to_gold",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_copy_traget_adls_gold",
+									"type": "DatasetReference",
+									"parameters": {
+										"FileName": {
+											"value": "@concat(\nitem(), '_',\nformatDateTime(utcNow(),'yyyyMMddHHmmss'),\n'.csv'\n)",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"folder": {
+			"name": "Project"
+		},
+		"annotations": []
+	}
+}
