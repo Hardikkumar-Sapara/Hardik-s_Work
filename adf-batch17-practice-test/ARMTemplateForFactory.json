@@ -3950,6 +3950,117 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_master_pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "bronze_to_silver_csv",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_01_bronze_to_silver",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "silver_to_gold_with_maxFilesize",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "bronze_to_silver_csv",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_02_silver_to_gold_with_MaxFileSize",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "bronze_to_sql_silver",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "silver_to_gold_with_maxFilesize",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_03_bronze_to_sql",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "silversql_to_goldadls_csv",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "bronze_to_sql_silver",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_04_SilverSQL_To_GoldADLS",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Project"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_01_bronze_to_silver')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_02_silver_to_gold_with_MaxFileSize')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_03_bronze_to_sql')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_04_SilverSQL_To_GoldADLS')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_orderstxt_copy_sqltable')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
