@@ -1,0 +1,39 @@
+{
+	"name": "Every Second Tuesday",
+	"properties": {
+		"description": "This triggers is called in every second Tuesday of months",
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pl_master_pipeline",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Month",
+				"interval": 1,
+				"startTime": "2026-04-09T13:26:00",
+				"timeZone": "India Standard Time",
+				"schedule": {
+					"minutes": [
+						0
+					],
+					"hours": [
+						9
+					],
+					"monthlyOccurrences": [
+						{
+							"day": "Tuesday",
+							"occurrence": 2
+						}
+					]
+				}
+			}
+		}
+	}
+}
